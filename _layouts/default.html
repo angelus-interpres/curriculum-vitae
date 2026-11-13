@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'ru' }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ site.title }}</title>
+<meta name="description" content="{{ site.description }}">
+<meta property="og:title" content="{{ site.title }}">
+<meta property="og:description" content="{{ site.description }}">
+<script>
+  try { var t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gentium+Book+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Serif+Hebrew:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbfaf6; --text: #1e1c19; --muted: #6f6a61; --accent: #8a3324; --rule: #e3ddd1;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #17181b; --text: #e7e3da; --muted: #9d978c; --accent: #e3a48d; --rule: #2e3035;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17181b; --text: #e7e3da; --muted: #9d978c; --accent: #e3a48d; --rule: #2e3035;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    margin: 0 auto; max-width: 46rem; padding: 1.5rem 1.25rem 4rem;
+    background: var(--bg); color: var(--text);
+    font: 1.125rem/1.55 "Gentium Book Plus", Georgia, "Times New Roman", serif;
+    transition: background .2s, color .2s;
+  }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  .bar { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center;
+         justify-content: space-between; font-size: .95rem; margin-bottom: 2.5rem; }
+  .bar nav { display: flex; flex-wrap: wrap; gap: .25rem 1rem; }
+  .bar nav a { color: var(--muted); text-decoration: none; font-style: italic; }
+  .bar nav a:hover { color: var(--accent); }
+  .tools { display: flex; gap: .5rem; }
+  .tools button {
+    font: inherit; color: var(--muted); background: none; cursor: pointer;
+    border: 1px solid var(--rule); border-radius: 999px; padding: .15rem .7rem;
+  }
+  .tools button:hover { color: var(--accent); border-color: var(--accent); }
+
+  h1 { font-size: 2rem; font-weight: 400; line-height: 1.2; margin: 0 0 .4rem; }
+  h1 + p { color: var(--muted); margin-top: 0; }
+  h2 {
+    font-size: 1.5rem; font-weight: 400; font-style: italic; color: var(--accent);
+    border-bottom: 1px solid var(--rule); padding-bottom: .2rem; margin: 2.5rem 0 1rem;
+    scroll-margin-top: 1rem;
+  }
+  h3 {
+    font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin: 1.6rem 0 .5rem;
+  }
+  ul, ol { padding-left: 1.4rem; margin: .4rem 0; }
+  li { margin: .35rem 0; }
+  li::marker { color: var(--muted); }
+  ul ul { list-style: none; padding-left: 1.2rem; margin: .2rem 0; }
+  ul ul li::before { content: "❖"; color: var(--muted); margin-left: -1.2rem; width: 1.2rem; display: inline-block; font-size: .8em; }
+  [lang="he"] { font-family: "Noto Serif Hebrew", serif; direction: rtl; unicode-bidi: isolate; }
+
+  footer { margin-top: 3rem; padding-top: .8rem; border-top: 1px solid var(--rule);
+           color: var(--muted); font-size: .85rem; }
+
+  @media print {
+    :root, :root[data-theme="dark"] { --bg: #fff; --text: #000; --muted: #444; --accent: #000; --rule: #bbb; }
+    body { max-width: none; padding: 0; font-size: 11pt; }
+    .bar, footer { display: none; }
+    a { text-decoration: none; }
+    h2 { margin-top: 1.4rem; break-after: avoid; }
+    h3 { break-after: avoid; }
+    li { break-inside: avoid; }
+    @page { margin: 1.8cm 2cm; }
+  }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <nav id="nav"></nav>
+    <div class="tools">
+      <button id="pdf" type="button" title="Печать или сохранение в PDF">PDF</button>
+      <button id="theme" type="button" title="Тёмная / светлая тема">☾</button>
+    </div>
+  </div>
+
+  <main>
+{{ content }}
+  </main>
+
+  <footer>Обновлено {{ site.time | date: "%d.%m.%Y" }}</footer>
+
+<script>
+  // Оглавление собирается само из заголовков разделов (## …)
+  var nav = document.getElementById('nav');
+  document.querySelectorAll('main h2').forEach(function (h, i) {
+    if (!h.id) h.id = 's' + (i + 1);
+    var a = document.createElement('a');
+    a.href = '#' + h.id; a.textContent = h.textContent;
+    nav.appendChild(a);
+  });
+
+  // Тёмная / светлая тема
+  var root = document.documentElement, btn = document.getElementById('theme');
+  function current() {
+    return root.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+  function label() { btn.textContent = current() === 'dark' ? '☀' : '☾'; }
+  btn.addEventListener('click', function () {
+    var t = current() === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = t;
+    try { localStorage.setItem('theme', t); } catch (e) {}
+    label();
+  });
+  label();
+
+  document.getElementById('pdf').addEventListener('click', function () { window.print(); });
+</script>
+</body>
+</html>
